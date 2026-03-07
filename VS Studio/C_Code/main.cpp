@@ -2,6 +2,6 @@
 
 int main()
 {
-	array_code05();
+	list_code01();
 	return 0;
 }
