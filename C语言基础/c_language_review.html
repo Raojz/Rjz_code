@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C语言全面知识复习手册</title>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 生成目录
+            generateTOC();
+            
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+            
+            // 折叠/展开功能
+            document.querySelectorAll('.toc .toggle').forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    const parentLi = this.closest('li');
+                    const childrenUl = parentLi.querySelector('ul');
+                    if (childrenUl) {
+                        childrenUl.classList.toggle('toc-hide');
+                        this.classList.toggle('open');
+                    }
+                });
+            });
+        });
+        
+        function generateTOC() {
+            const toc = document.getElementById('toc');
+            const headings = document.querySelectorAll('h2, h3, h4');
+            
+            const tocUl = document.createElement('ul');
+            toc.appendChild(tocUl);
+            
+            let currentLevel = 0;
+            let currentUl = tocUl;
+            let parentLis = [];
+            
+            headings.forEach((heading, index) => {
+                const headingLevel = parseInt(heading.tagName.charAt(1));
+                const headingId = 'heading-' + index;
+                heading.id = headingId;
+                
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = '#' + headingId;
+                a.textContent = heading.textContent;
+                a.classList.add('toc-level-' + headingLevel);
+                li.appendChild(a);
+                
+                if (headingLevel > currentLevel) {
+                    // 进入子目录
+                    const newUl = document.createElement('ul');
+                    parentLis.push(currentUl);
+                    currentUl.appendChild(li);
+                    li.appendChild(newUl);
+                    currentUl = newUl;
+                } else if (headingLevel < currentLevel) {
+                    // 返回父目录
+                    for (let i = currentLevel; i > headingLevel; i--) {
+                        currentUl = parentLis.pop();
+                    }
+                    currentUl.appendChild(li);
+                } else {
+                    // 同一级别
+                    currentUl.appendChild(li);
+                }
+                
+                currentLevel = headingLevel;
+            });
+            
+            // 添加折叠/展开按钮
+            addToggleButtons(tocUl);
+        }
+        
+        function addToggleButtons(ul) {
+            const lis = ul.querySelectorAll('li');
+            lis.forEach(li => {
+                const childUl = li.querySelector('ul');
+                if (childUl) {
+                    const toggle = document.createElement('span');
+                    toggle.classList.add('toggle');
+                    li.insertBefore(toggle, li.firstChild);
+                    
+                    // 默认折叠
+                    childUl.classList.add('toc-hide');
+                }
+            });
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'SimSun', '宋体', serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px 20px 20px 320px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 40px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .toc {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 260px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .toc h2 {
+            margin-top: 0;
+            font-size: 20px;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .toc ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .toc li {
+            margin-bottom: 8px;
+        }
+        .toc a {
+            text-decoration: none;
+            color: #333;
+            display: block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+        .toc a:hover {
+            background-color: #f0f0f0;
+        }
+        .toc .toc-level-1 {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .toc .toc-level-2 {
+            margin-left: 15px;
+            font-size: 15px;
+        }
+        .toc .toc-level-3 {
+            margin-left: 30px;
+            font-size: 14px;
+        }
+        .toc .toc-level-4 {
+            margin-left: 45px;
+            font-size: 13px;
+        }
+        .toc .toggle {
+            cursor: pointer;
+            user-select: none;
+            display: inline-block;
+            margin-right: 5px;
+            width: 12px;
+            text-align: center;
+        }
+        .toc .toggle::before {
+            content: '+';
+        }
+        .toc .toggle.open::before {
+            content: '-';
+        }
+        .toc .toc-hide {
+            display: none;
+        }
+        @media (max-width: 1200px) {
+            body {
+                padding: 20px;
+            }
+            .toc {
+                position: static;
+                width: auto;
+                max-height: none;
+                margin-bottom: 20px;
+            }
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #555;
+            margin-top: 30px;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+        }
+        h3 {
+            color: #666;
+            margin-top: 20px;
+        }
+        p {
+            margin-bottom: 15px;
+        }
+        code {
+            font-family: 'Consolas', 'Courier New', monospace;
+            background-color: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        pre {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border-left: 4px solid #ccc;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        ul, ol {
+            margin-bottom: 15px;
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f5f5f5;
+        }
+        .note {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-left: 4px solid #2196f3;
+            margin-bottom: 20px;
+        }
+        .warning {
+            background-color: #fff3e0;
+            padding: 15px;
+            border-left: 4px solid #ff9800;
+            margin-bottom: 20px;
+        }
+        .important {
+            background-color: #ffebee;
+            padding: 15px;
+            border-left: 4px solid #f44336;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="toc">
+        <h2>目录导航</h2>
+        <div id="toc"></div>
+    </div>
+    <div class="container">
+        <h1>C语言全面知识复习手册</h1>
+
+        <div class="note">
+            <strong>前言</strong><br>
+            C语言是一种通用的、过程式的编程语言，广泛应用于系统软件、嵌入式系统、高性能计算等领域。本手册系统涵盖C语言核心知识点，适合有一定基础的开发者复习和巩固C语言知识。
+        </div>
+
+        <h2>目录</h2>
+
+        <h3>第一部分：基础语法</h3>
+        <ol>
+            <li>变量与数据类型</li>
+            <li>运算符与表达式</li>
+            <li>控制流语句</li>
+        </ol>
+
+        <h3>第二部分：函数与指针</h3>
+        <ol>
+            <li>函数定义与调用</li>
+            <li>指针基础</li>
+            <li>函数指针与回调</li>
+        </ol>
+
+        <h3>第三部分：数组与字符串</h3>
+        <ol>
+            <li>数组操作</li>
+            <li>字符串处理</li>
+        </ol>
+
+        <h3>第四部分：结构体与联合体</h3>
+        <ol>
+            <li>结构体定义与使用</li>
+            <li>联合体与枚举</li>
+            <li>结构体指针与动态分配</li>
+        </ol>
+
+        <h3>第五部分：内存管理</h3>
+        <ol>
+            <li>静态内存与动态内存</li>
+            <li>动态内存分配（malloc、calloc、realloc、free）</li>
+            <li>指针运算与内存布局</li>
+        </ol>
+
+        <h3>第六部分：文件操作</h3>
+        <ol>
+            <li>文件打开与关闭</li>
+            <li>文件读写操作</li>
+            <li>文件定位与错误处理</li>
+        </ol>
+
+        <h3>第七部分：预处理指令</h3>
+        <ol>
+            <li>宏定义与条件编译</li>
+            <li>文件包含与头文件</li>
+        </ol>
+
+        <h3>第八部分：高级主题</h3>
+        <ol>
+            <li>位运算与掩码</li>
+            <li>递归与栈</li>
+            <li>错误处理与调试</li>
+        </ol>
+
+        <h2>第一部分：基础语法</h2>
+
+        <h3>1. 变量与数据类型</h3>
+
+        <h4>1.1 基本数据类型</h4>
+        <p>C语言提供了多种基本数据类型，包括：</p>
+        <ul>
+            <li><strong>整型</strong>：int, short, long, long long</li>
+            <li><strong>浮点型</strong>：float, double</li>
+            <li><strong>字符型</strong>：char</li>
+            <li><strong>布尔型</strong>：_Bool（C99标准）</li>
+        </ul>
+
+        <h4>语法示例：</h4>
+        <pre><code>int age = 25;
+float height = 1.75f;
+char grade = 'A';
+_Bool is_student = 1;
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>整型用于计数、索引等整数运算</li>
+            <li>浮点型用于科学计算、金融计算等需要高精度的场景</li>
+            <li>字符型用于存储单个字符或ASCII码</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 不同数据类型占用的内存大小可能因平台而异<br>
+            - 浮点型存在精度误差，不宜用于精确比较
+        </div>
+
+        <h4>1.2 变量声明与初始化</h4>
+        <p>变量声明的语法为：<code>数据类型 变量名;</code></p>
+        <p>变量初始化的语法为：<code>数据类型 变量名 = 初始值;</code></p>
+
+        <h4>语法示例：</h4>
+        <pre><code>// 声明变量
+int x;
+// 初始化变量
+x = 10;
+// 声明并初始化变量
+int y = 20;
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>在函数开头声明所有变量（传统C风格）</li>
+            <li>在需要时声明变量（C99及以后标准）</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 未初始化的局部变量值是未定义的<br>
+            - 全局变量默认初始化为0
+        </div>
+
+        <h3>2. 运算符与表达式</h3>
+
+        <h4>2.1 算术运算符</h4>
+        <p>C语言提供了以下算术运算符：</p>
+        <ul>
+            <li><code>+</code>：加法</li>
+            <li><code>-</code>：减法</li>
+            <li><code>*</code>：乘法</li>
+            <li><code>/</code>：除法</li>
+            <li><code>%</code>：取模</li>
+        </ul>
+
+        <h4>语法示例：</h4>
+        <pre><code>int a = 10, b = 3;
+int sum = a + b;      // 13
+int diff = a - b;     // 7
+int product = a * b;  // 30
+int quotient = a / b; // 3（整数除法）
+int remainder = a % b;// 1
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>基本数学运算</li>
+            <li>循环计数</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 整数除法会截断小数部分<br>
+            - 取模运算符的结果符号与被除数相同
+        </div>
+
+        <h4>2.2 关系运算符</h4>
+        <p>关系运算符用于比较两个值的大小关系：</p>
+        <ul>
+            <li><code>==</code>：等于</li>
+            <li><code>!=</code>：不等于</li>
+            <li><code>&gt;</code>：大于</li>
+            <li><code>&lt;</code>：小于</li>
+            <li><code>&gt;=</code>：大于等于</li>
+            <li><code>&lt;=</code>：小于等于</li>
+        </ul>
+
+        <h4>语法示例：</h4>
+        <pre><code>int a = 10, b = 20;
+_Bool is_equal = (a == b);    // 0（假）
+_Bool is_greater = (a > b);   // 0（假）
+_Bool is_less = (a < b);      // 1（真）
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>条件判断</li>
+            <li>循环终止条件</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 不要将赋值运算符<code>=</code>与相等运算符<code>==</code>混淆<br>
+            - 关系运算符的结果是布尔值（0或1）
+        </div>
+
+        <h4>2.3 逻辑运算符</h4>
+        <p>逻辑运算符用于组合多个条件：</p>
+        <ul>
+            <li><code>&&</code>：逻辑与</li>
+            <li><code>||</code>：逻辑或</li>
+            <li><code>!</code>：逻辑非</li>
+        </ul>
+
+        <h4>语法示例：</h4>
+        <pre><code>int age = 25;
+_Bool is_adult = (age >= 18);
+_Bool is_student = (age <= 22);
+_Bool is_adult_student = is_adult && is_student; // 1（真）
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>复杂条件判断</li>
+            <li>错误处理</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 逻辑与和逻辑或具有短路求值特性<br>
+            - 逻辑非运算符的优先级较高
+        </div>
+
+        <h3>3. 控制流语句</h3>
+
+        <h4>3.1 if-else语句</h4>
+        <p>if-else语句用于根据条件执行不同的代码块。</p>
+
+        <h4>语法示例：</h4>
+        <pre><code>int score = 85;
+if (score >= 90) {
+    printf("优秀\n");
+} else if (score >= 80) {
+    printf("良好\n");
+} else if (score >= 70) {
+    printf("中等\n");
+} else {
+    printf("不及格\n");
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>分支选择</li>
+            <li>错误处理</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 条件表达式必须是布尔值<br>
+            - 大括号可以省略，但不建议（容易引入bug）
+        </div>
+
+        <h4>3.2 switch-case语句</h4>
+        <p>switch-case语句用于多分支选择。</p>
+
+        <h4>语法示例：</h4>
+        <pre><code>int day = 3;
+switch (day) {
+    case 1:
+        printf("星期一\n");
+        break;
+    case 2:
+        printf("星期二\n");
+        break;
+    case 3:
+        printf("星期三\n");
+        break;
+    default:
+        printf("无效日期\n");
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>菜单选择</li>
+            <li>状态机实现</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - case标签必须是常量表达式<br>
+            - 每个case分支末尾需要添加break语句，否则会继续执行下一个case
+        </div>
+
+        <h4>3.3 循环语句</h4>
+        <p>C语言提供了三种循环语句：for、while和do-while。</p>
+
+        <h4>for循环语法示例：</h4>
+        <pre><code>for (int i = 0; i < 10; i++) {
+    printf("%d\n", i);
+}
+</code></pre>
+
+        <h4>while循环语法示例：</h4>
+        <pre><code>int i = 0;
+while (i < 10) {
+    printf("%d\n", i);
+    i++;
+}
+</code></pre>
+
+        <h4>do-while循环语法示例：</h4>
+        <pre><code>int i = 0;
+do {
+    printf("%d\n", i);
+    i++;
+} while (i < 10);
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>遍历数组</li>
+            <li>重复执行某个操作</li>
+            <li>输入验证</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - for循环适合已知循环次数的场景<br>
+            - while循环适合未知循环次数的场景<br>
+            - do-while循环至少执行一次
+        </div>
+
+        <h2>第二部分：函数与指针</h2>
+
+        <h3>4. 函数定义与调用</h3>
+
+        <h4>4.1 函数定义</h4>
+        <p>函数定义的语法为：</p>
+        <pre><code>返回值类型 函数名(参数列表) {
+    // 函数体
+    return 返回值;
+}
+</code></pre>
+
+        <h4>语法示例：</h4>
+        <pre><code>int add(int a, int b) {
+    return a + b;
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>代码复用</li>
+            <li>模块化设计</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 函数名应具有描述性<br>
+            - 参数列表中的参数需要指定类型
+        </div>
+
+        <h4>4.2 函数调用</h4>
+        <p>函数调用的语法为：<code>函数名(参数列表);</code></p>
+
+        <h4>语法示例：</h4>
+        <pre><code>int result = add(10, 20);
+printf("%d\n", result); // 输出30
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>执行特定功能</li>
+            <li>计算结果</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 实参的数量和类型必须与形参匹配<br>
+            - 函数调用会创建栈帧，存储局部变量和返回地址
+        </div>
+
+        <h4>4.3 函数原型</h4>
+        <p>函数原型用于声明函数的接口，语法为：<code>返回值类型 函数名(参数列表);</code></p>
+
+        <h4>语法示例：</h4>
+        <pre><code>int add(int a, int b); // 函数原型
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>头文件中声明函数接口</li>
+            <li>解决函数调用顺序问题</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 函数原型必须与函数定义一致<br>
+            - 参数名称可以省略，但建议保留以提高可读性
+        </div>
+
+        <h3>5. 指针基础</h3>
+
+        <h4>5.1 指针声明</h4>
+        <p>指针声明的语法为：<code>数据类型 *指针变量名;</code></p>
+
+        <h4>语法示例：</h4>
+        <pre><code>int x = 10;
+int *p = &x; // p指向x的地址
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>动态内存分配</li>
+            <li>函数参数传递（传址调用）</li>
+            <li>数组操作</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 未初始化的指针是野指针，可能导致程序崩溃<br>
+            - 空指针（NULL）不指向任何内存地址
+        </div>
+
+        <h4>5.2 指针操作</h4>
+        <p>指针的基本操作包括：</p>
+        <ul>
+            <li><code>&</code>：取地址运算符</li>
+            <li><code>*</code>：解引用运算符</li>
+        </ul>
+
+        <h4>语法示例：</h4>
+        <pre><code>int x = 10;
+int *p = &x; // p指向x的地址
+printf("x的值：%d\n", x);    // 输出10
+printf("x的地址：%p\n", &x); // 输出x的地址
+printf("p的值：%p\n", p);   // 输出x的地址
+printf("p指向的值：%d\n", *p); // 输出10
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>修改函数外部变量</li>
+            <li>遍历数组</li>
+            <li>动态数据结构（链表、树等）</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 解引用空指针会导致程序崩溃<br>
+            - 指针类型必须与指向的数据类型匹配
+        </div>
+
+        <h3>6. 函数指针与回调</h3>
+
+        <h4>6.1 函数指针声明</h4>
+        <p>函数指针声明的语法为：<code>返回值类型 (*指针变量名)(参数列表);</code></p>
+
+        <h4>语法示例：</h4>
+        <pre><code>int add(int a, int b) {
+    return a + b;
+}
+
+int (*fp)(int, int) = add; // fp指向add函数
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>回调函数</li>
+            <li>动态函数调用</li>
+            <li>状态机实现</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 函数指针的类型必须与指向的函数类型匹配<br>
+            - 函数名本身就是函数的地址
+        </div>
+
+        <h4>6.2 回调函数</h4>
+        <p>回调函数是指通过函数指针调用的函数。</p>
+
+        <h4>语法示例：</h4>
+        <pre><code>// 回调函数类型定义
+typedef int (*Callback)(int, int);
+
+// 执行回调的函数
+int execute_callback(Callback cb, int a, int b) {
+    return cb(a, b);
+}
+
+// 回调函数实现
+int multiply(int a, int b) {
+    return a * b;
+}
+
+int main() {
+    int result = execute_callback(multiply, 10, 20);
+    printf("%d\n", result); // 输出200
+    return 0;
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>事件驱动编程</li>
+            <li>排序算法中的比较函数</li>
+            <li>异步操作完成后的处理</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 回调函数的参数和返回值类型必须与函数指针类型匹配<br>
+            - 回调函数可以是静态函数或全局函数
+        </div>
+
+        <h2>第三部分：数组与字符串</h2>
+
+        <h3>7. 数组操作</h3>
+
+        <h4>7.1 数组声明</h4>
+        <p>数组声明的语法为：<code>数据类型 数组名[数组大小];</code></p>
+
+        <h4>语法示例：</h4>
+        <pre><code>int numbers[5]; // 声明一个包含5个整数的数组
+int scores[] = {90, 85, 95, 80, 75}; // 声明并初始化数组
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>存储一组相同类型的数据</li>
+            <li>遍历和排序</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 数组大小必须是常量表达式<br>
+            - 数组下标从0开始
+        </div>
+
+        <h4>7.2 数组访问</h4>
+        <p>数组访问的语法为：<code>数组名[下标];</code></p>
+
+        <h4>语法示例：</h4>
+        <pre><code>int scores[] = {90, 85, 95, 80, 75};
+printf("第一个元素：%d\n", scores[0]); // 输出90
+printf("最后一个元素：%d\n", scores[4]); // 输出75
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>遍历数组元素</li>
+            <li>修改数组元素</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 数组下标不能越界，否则会导致未定义行为<br>
+            - 数组名是常量指针，不能修改
+        </div>
+
+        <h4>7.3 多维数组</h4>
+        <p>多维数组声明的语法为：<code>数据类型 数组名[第一维大小][第二维大小];</code></p>
+
+        <h4>语法示例：</h4>
+        <pre><code>int matrix[3][3] = {
+    {1, 2, 3},
+    {4, 5, 6},
+    {7, 8, 9}
+};
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>矩阵运算</li>
+            <li>图像存储</li>
+            <li>表格数据</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 多维数组在内存中是按行存储的<br>
+            - 多维数组的访问需要指定所有维度的下标
+        </div>
+
+        <h3>8. 字符串处理</h3>
+
+        <h4>8.1 字符串表示</h4>
+        <p>C语言中，字符串是以<code>\0</code>（空字符）结尾的字符数组。</p>
+
+        <h4>语法示例：</h4>
+        <pre><code>char str1[] = "Hello"; // 自动添加\0
+char str2[6] = {'H', 'e', 'l', 'l', 'o', '\0'};
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>文本处理</li>
+            <li>用户输入</li>
+            <li>文件名处理</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 字符串长度不包括<code>\0</code><br>
+            - 字符串数组的大小必须比实际字符串长度大1
+        </div>
+
+        <h4>8.2 字符串函数</h4>
+        <p>C标准库提供了丰富的字符串处理函数，定义在<code>&lt;string.h&gt;</code>头文件中。</p>
+
+        <h4>常用字符串函数：</h4>
+        <ul>
+            <li><code>strlen</code>：计算字符串长度</li>
+            <li><code>strcpy</code>：复制字符串</li>
+            <li><code>strcat</code>：拼接字符串</li>
+            <li><code>strcmp</code>：比较字符串</li>
+            <li><code>strchr</code>：查找字符</li>
+            <li><code>strstr</code>：查找子串</li>
+        </ul>
+
+        <h4>语法示例：</h4>
+        <pre><code>#include <string.h>
+
+char str1[20] = "Hello";
+char str2[] = "World";
+
+// 计算字符串长度
+printf("str1长度：%zu\n", strlen(str1)); // 输出5
+
+// 复制字符串
+strcpy(str1, str2);
+printf("str1：%s\n", str1); // 输出World
+
+// 拼接字符串
+strcat(str1, "!");
+printf("str1：%s\n", str1); // 输出World!
+
+// 比较字符串
+int result = strcmp(str1, str2);
+printf("比较结果：%d\n", result); // 输出非0
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>字符串操作</li>
+            <li>输入验证</li>
+            <li>文本解析</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - <code>strcpy</code>和<code>strcat</code>可能导致缓冲区溢出，建议使用<code>strncpy</code>和<code>strncat</code><br>
+            - 字符串比较是按ASCII码值进行的
+        </div>
+
+        <h2>第四部分：结构体与联合体</h2>
+
+        <h3>9. 结构体定义与使用</h3>
+
+        <h4>9.1 结构体定义</h4>
+        <p>结构体定义的语法为：</p>
+        <pre><code>struct 结构体名 {
+    数据类型 成员名1;
+    数据类型 成员名2;
+    // ...
+};
+</code></pre>
+
+        <h4>语法示例：</h4>
+        <pre><code>struct Person {
+    char name[20];
+    int age;
+    float height;
+};
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>存储复杂数据类型</li>
+            <li>表示实体（如用户、商品等）</li>
+            <li>网络数据包</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 结构体成员可以是任意数据类型<br>
+            - 结构体大小是成员大小的总和（可能有内存对齐）
+        </div>
+
+        <h4>9.2 结构体变量声明与初始化</h4>
+        <p>结构体变量声明的语法为：<code>struct 结构体名 变量名;</code></p>
+
+        <h4>语法示例：</h4>
+        <pre><code>struct Person p1;
+strcpy(p1.name, "张三");
+p1.age = 25;
+p1.height = 1.75f;
+
+// 初始化结构体变量
+struct Person p2 = {"李四", 30, 1.80f};
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>创建实体对象</li>
+            <li>存储相关联的数据</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 结构体成员访问使用<code>.</code>运算符<br>
+            - 结构体初始化的顺序必须与成员定义顺序一致
+        </div>
+
+        <h4>9.3 结构体数组</h4>
+        <p>结构体数组声明的语法为：<code>struct 结构体名 数组名[数组大小];</code></p>
+
+        <h4>语法示例：</h4>
+        <pre><code>struct Person people[2] = {
+    {"张三", 25, 1.75f},
+    {"李四", 30, 1.80f}
+};
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>存储多个实体对象</li>
+            <li>数据库记录</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 结构体数组的访问方式与普通数组类似<br>
+            - 可以通过下标访问结构体成员
+        </div>
+
+        <h3>10. 联合体与枚举</h3>
+
+        <h4>10.1 联合体定义</h4>
+        <p>联合体定义的语法为：</p>
+        <pre><code>union 联合体名 {
+    数据类型 成员名1;
+    数据类型 成员名2;
+    // ...
+};
+</code></pre>
+
+        <h4>语法示例：</h4>
+        <pre><code>union Data {
+    int i;
+    float f;
+    char str[20];
+};
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>节省内存（多个成员共享同一块内存）</li>
+            <li>类型转换</li>
+            <li>硬件寄存器访问</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 联合体的大小是最大成员的大小<br>
+            - 同一时间只能有一个成员有效
+        </div>
+
+        <h4>10.2 枚举定义</h4>
+        <p>枚举定义的语法为：</p>
+        <pre><code>enum 枚举名 {
+    枚举值1,
+    枚举值2,
+    // ...
+};
+</code></pre>
+
+        <h4>语法示例：</h4>
+        <pre><code>enum Weekday {
+    Monday,
+    Tuesday,
+    Wednesday,
+    Thursday,
+    Friday,
+    Saturday,
+    Sunday
+};
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>表示有限的状态集合</li>
+            <li>提高代码可读性</li>
+            <li>替代魔法数字</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 枚举值默认从0开始递增<br>
+            - 可以显式指定枚举值
+        </div>
+
+        <h3>11. 结构体指针与动态分配</h3>
+
+        <h4>11.1 结构体指针</h4>
+        <p>结构体指针声明的语法为：<code>struct 结构体名 *指针变量名;</code></p>
+
+        <h4>语法示例：</h4>
+        <pre><code>struct Person p = {"张三", 25, 1.75f};
+struct Person *pp = &p;
+
+// 访问结构体成员
+printf("姓名：%s\n", pp->name); // 输出张三
+printf("年龄：%d\n", pp->age);  // 输出25
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>动态内存分配</li>
+            <li>链表节点</li>
+            <li>函数参数传递（传址调用）</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 结构体指针访问成员使用<code>-></code>运算符<br>
+            - 结构体指针可以指向动态分配的内存
+        </div>
+
+        <h4>11.2 动态分配结构体</h4>
+        <p>动态分配结构体的语法为：<code>struct 结构体名 *指针变量名 = malloc(sizeof(struct 结构体名));</code></p>
+
+        <h4>语法示例：</h4>
+        <pre><code>struct Person *pp = malloc(sizeof(struct Person));
+if (pp != NULL) {
+    strcpy(pp->name, "张三");
+    pp->age = 25;
+    pp->height = 1.75f;
+    free(pp); // 释放内存
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>动态创建结构体对象</li>
+            <li>链表、树等动态数据结构</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 动态分配的内存需要手动释放，否则会导致内存泄漏<br>
+            - 分配失败会返回NULL，需要检查
+        </div>
+
+        <h2>第五部分：内存管理</h2>
+
+        <h3>12. 静态内存与动态内存</h3>
+
+        <h4>12.1 静态内存</h4>
+        <p>静态内存是指在编译时分配的内存，包括：</p>
+        <ul>
+            <li>全局变量</li>
+            <li>静态变量</li>
+            <li>常量</li>
+        </ul>
+
+        <h4>语法示例：</h4>
+        <pre><code>int global_var = 10; // 全局变量
+
+void func() {
+    static int static_var = 20; // 静态变量
+    static_var++;
+    printf("%d\n", static_var);
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>存储全局配置</li>
+            <li>计数器</li>
+            <li>常量数据</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 静态内存的生命周期是整个程序运行期间<br>
+            - 静态变量只会初始化一次
+        </div>
+
+        <h4>12.2 动态内存</h4>
+        <p>动态内存是指在运行时分配的内存，使用<code>malloc</code>、<code>calloc</code>、<code>realloc</code>等函数分配。</p>
+
+        <h4>语法示例：</h4>
+        <pre><code>int *p = malloc(10 * sizeof(int)); // 分配10个整数的内存
+if (p != NULL) {
+    // 使用内存
+    free(p); // 释放内存
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>动态数组</li>
+            <li>链表、树等动态数据结构</li>
+            <li>大数据存储</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 动态内存需要手动释放，否则会导致内存泄漏<br>
+            - 动态内存的生命周期由程序员控制
+        </div>
+
+        <h3>13. 动态内存分配</h3>
+
+        <h4>13.1 malloc函数</h4>
+        <p><code>malloc</code>函数用于分配指定大小的内存，语法为：<code>void *malloc(size_t size);</code></p>
+
+        <h4>语法示例：</h4>
+        <pre><code>int *p = malloc(10 * sizeof(int));
+if (p != NULL) {
+    for (int i = 0; i < 10; i++) {
+        p[i] = i;
+    }
+    free(p);
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>动态数组</li>
+            <li>结构体动态分配</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - <code>malloc</code>分配的内存是未初始化的<br>
+            - 分配失败返回NULL
+        </div>
+
+        <h4>13.2 calloc函数</h4>
+        <p><code>calloc</code>函数用于分配指定数量和大小的内存，并初始化为0，语法为：<code>void *calloc(size_t num, size_t size);</code></p>
+
+        <h4>语法示例：</h4>
+        <pre><code>int *p = calloc(10, sizeof(int));
+if (p != NULL) {
+    // p中的元素初始化为0
+    free(p);
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>需要初始化为0的动态数组</li>
+            <li>结构体动态分配</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - <code>calloc</code>比<code>malloc</code>多了初始化步骤<br>
+            - 分配失败返回NULL
+        </div>
+
+        <h4>13.3 realloc函数</h4>
+        <p><code>realloc</code>函数用于重新分配内存，语法为：<code>void *realloc(void *ptr, size_t size);</code></p>
+
+        <h4>语法示例：</h4>
+        <pre><code>int *p = malloc(10 * sizeof(int));
+if (p != NULL) {
+    // 重新分配内存为20个整数
+    p = realloc(p, 20 * sizeof(int));
+    if (p != NULL) {
+        free(p);
+    }
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>动态调整数组大小</li>
+            <li>扩展内存</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - <code>realloc</code>可能会移动内存块<br>
+            - 分配失败返回NULL，原内存块仍然有效
+        </div>
+
+        <h4>13.4 free函数</h4>
+        <p><code>free</code>函数用于释放动态分配的内存，语法为：<code>void free(void *ptr);</code></p>
+
+        <h4>语法示例：</h4>
+        <pre><code>int *p = malloc(10 * sizeof(int));
+if (p != NULL) {
+    free(p);
+    p = NULL; // 避免野指针
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>释放不再使用的动态内存</li>
+            <li>防止内存泄漏</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 只能释放动态分配的内存<br>
+            - 不能重复释放同一块内存
+        </div>
+
+        <h3>14. 指针运算与内存布局</h3>
+
+        <h4>14.1 指针运算</h4>
+        <p>指针可以进行以下运算：</p>
+        <ul>
+            <li>加法：<code>指针 + 整数</code></li>
+            <li>减法：<code>指针 - 整数</code></li>
+            <li>比较：<code>指针1 == 指针2</code>、<code>指针1 < 指针2</code>等</li>
+        </ul>
+
+        <h4>语法示例：</h4>
+        <pre><code>int arr[] = {10, 20, 30, 40, 50};
+int *p = arr;
+
+printf("%d\n", *p);   // 输出10
+printf("%d\n", *(p+1)); // 输出20
+printf("%d\n", *(p+2)); // 输出30
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>遍历数组</li>
+            <li>动态数据结构操作</li>
+            <li>内存块操作</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 指针运算的单位是指向的数据类型的大小<br>
+            - 指针不能进行乘法和除法运算
+        </div>
+
+        <h4>14.2 内存布局</h4>
+        <p>C程序的内存布局包括以下几个部分：</p>
+        <ul>
+            <li><strong>代码段</strong>：存储程序的机器指令</li>
+            <li><strong>数据段</strong>：存储全局变量和静态变量</li>
+            <li><strong>堆</strong>：存储动态分配的内存</li>
+            <li><strong>栈</strong>：存储局部变量和函数调用信息</li>
+        </ul>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>理解程序运行机制</li>
+            <li>调试内存问题</li>
+            <li>优化内存使用</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 栈的大小是有限的，递归过深会导致栈溢出<br>
+            - 堆的大小受限于系统内存
+        </div>
+
+        <h2>第六部分：文件操作</h2>
+
+        <h3>15. 文件打开与关闭</h3>
+
+        <h4>15.1 fopen函数</h4>
+        <p><code>fopen</code>函数用于打开文件，语法为：<code>FILE *fopen(const char *filename, const char *mode);</code></p>
+
+        <h4>常用打开模式：</h4>
+        <ul>
+            <li><code>"r"</code>：只读模式</li>
+            <li><code>"w"</code>：写入模式（覆盖原有文件）</li>
+            <li><code>"a"</code>：追加模式（在文件末尾写入）</li>
+            <li><code>"r+"</code>：读写模式</li>
+            <li><code>"w+"</code>：读写模式（覆盖原有文件）</li>
+            <li><code>"a+"</code>：读写模式（在文件末尾写入）</li>
+        </ul>
+
+        <h4>语法示例：</h4>
+        <pre><code>FILE *fp = fopen("data.txt", "r");
+if (fp != NULL) {
+    // 操作文件
+    fclose(fp);
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>读取配置文件</li>
+            <li>写入日志文件</li>
+            <li>数据持久化</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 打开失败返回NULL<br>
+            - 需要检查文件是否成功打开
+        </div>
+
+        <h4>15.2 fclose函数</h4>
+        <p><code>fclose</code>函数用于关闭文件，语法为：<code>int fclose(FILE *stream);</code></p>
+
+        <h4>语法示例：</h4>
+        <pre><code>FILE *fp = fopen("data.txt", "r");
+if (fp != NULL) {
+    fclose(fp);
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>释放文件资源</li>
+            <li>确保数据写入磁盘</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 关闭文件后，文件指针不再有效<br>
+            - 程序退出时会自动关闭所有打开的文件
+        </div>
+
+        <h3>16. 文件读写操作</h3>
+
+        <h4>16.1 字符读写</h4>
+        <ul>
+            <li><code>fgetc</code>：读取一个字符</li>
+            <li><code>fputc</code>：写入一个字符</li>
+        </ul>
+
+        <h4>语法示例：</h4>
+        <pre><code>FILE *fp = fopen("data.txt", "w");
+if (fp != NULL) {
+    fputc('H', fp);
+    fputc('e', fp);
+    fputc('l', fp);
+    fclose(fp);
+}
+
+fp = fopen("data.txt", "r");
+if (fp != NULL) {
+    int c;
+    while ((c = fgetc(fp)) != EOF) {
+        printf("%c", c);
+    }
+    fclose(fp);
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>文本文件处理</li>
+            <li>逐字符解析</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - <code>fgetc</code>返回<code>EOF</code>表示文件结束<br>
+            - <code>EOF</code>是一个宏，值为-1
+        </div>
+
+        <h4>16.2 字符串读写</h4>
+        <ul>
+            <li><code>fgets</code>：读取一行字符串</li>
+            <li><code>fputs</code>：写入一行字符串</li>
+        </ul>
+
+        <h4>语法示例：</h4>
+        <pre><code>FILE *fp = fopen("data.txt", "w");
+if (fp != NULL) {
+    fputs("Hello World!\n", fp);
+    fclose(fp);
+}
+
+fp = fopen("data.txt", "r");
+if (fp != NULL) {
+    char buf[100];
+    while (fgets(buf, sizeof(buf), fp) != NULL) {
+        printf("%s", buf);
+    }
+    fclose(fp);
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>文本文件处理</li>
+            <li>配置文件读取</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - <code>fgets</code>会读取换行符<br>
+            - <code>fgets</code>最多读取<code>size-1</code>个字符
+        </div>
+
+        <h4>16.3 二进制读写</h4>
+        <ul>
+            <li><code>fread</code>：读取二进制数据</li>
+            <li><code>fwrite</code>：写入二进制数据</li>
+        </ul>
+
+        <h4>语法示例：</h4>
+        <pre><code>struct Person {
+    char name[20];
+    int age;
+    float height;
+};
+
+struct Person p = {"张三", 25, 1.75f};
+
+FILE *fp = fopen("person.dat", "wb");
+if (fp != NULL) {
+    fwrite(&p, sizeof(struct Person), 1, fp);
+    fclose(fp);
+}
+
+fp = fopen("person.dat", "rb");
+if (fp != NULL) {
+    struct Person p2;
+    fread(&p2, sizeof(struct Person), 1, fp);
+    printf("姓名：%s\n", p2.name);
+    printf("年龄：%d\n", p2.age);
+    printf("身高：%.2f\n", p2.height);
+    fclose(fp);
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>二进制文件处理</li>
+            <li>数据持久化</li>
+            <li>网络传输</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 二进制文件无法用文本编辑器直接查看<br>
+            - 二进制读写需要保证数据类型一致
+        </div>
+
+        <h3>17. 文件定位与错误处理</h3>
+
+        <h4>17.1 文件定位</h4>
+        <ul>
+            <li><code>fseek</code>：设置文件指针位置</li>
+            <li><code>ftell</code>：获取文件指针位置</li>
+            <li><code>rewind</code>：将文件指针重置到文件开头</li>
+        </ul>
+
+        <h4>语法示例：</h4>
+        <pre><code>FILE *fp = fopen("data.txt", "r");
+if (fp != NULL) {
+    // 将文件指针移动到第10个字节
+    fseek(fp, 10, SEEK_SET);
+    // 获取文件指针位置
+    long pos = ftell(fp);
+    printf("当前位置：%ld\n", pos);
+    // 重置文件指针到开头
+    rewind(fp);
+    fclose(fp);
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>随机访问文件</li>
+            <li>大型文件处理</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - <code>fseek</code>的第三个参数可以是<code>SEEK_SET</code>（文件开头）、<code>SEEK_CUR</code>（当前位置）或<code>SEEK_END</code>（文件末尾）<br>
+            - 二进制文件和文本文件的定位方式可能不同
+        </div>
+
+        <h4>17.2 错误处理</h4>
+        <ul>
+            <li><code>ferror</code>：检查文件操作是否出错</li>
+            <li><code>clearerr</code>：清除文件错误标志</li>
+        </ul>
+
+        <h4>语法示例：</h4>
+        <pre><code>FILE *fp = fopen("data.txt", "r");
+if (fp != NULL) {
+    char buf[100];
+    if (fgets(buf, sizeof(buf), fp) == NULL) {
+        if (ferror(fp)) {
+            printf("文件读取错误\n");
+            clearerr(fp);
+        }
+    }
+    fclose(fp);
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>错误处理</li>
+            <li>调试文件操作问题</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - <code>ferror</code>返回非0表示出错<br>
+            - <code>clearerr</code>用于重置错误标志
+        </div>
+
+        <h2>第七部分：预处理指令</h2>
+
+        <h3>18. 宏定义与条件编译</h3>
+
+        <h4>18.1 宏定义</h4>
+        <p>宏定义的语法为：<code>#define 宏名 替换文本</code></p>
+
+        <h4>语法示例：</h4>
+        <pre><code>#define PI 3.1415926
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+float area = PI * 5 * 5;
+int max_val = MAX(10, 20);
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>定义常量</li>
+            <li>定义简单函数</li>
+            <li>代码复用</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 宏替换是文本替换，不是函数调用<br>
+            - 宏参数需要加括号，避免优先级问题
+        </div>
+
+        <h4>18.2 条件编译</h4>
+        <p>条件编译的语法为：</p>
+        <pre><code>#ifdef 宏名
+    // 代码块1
+#else
+    // 代码块2
+#endif
+</code></pre>
+
+        <h4>语法示例：</h4>
+        <pre><code>#define DEBUG
+
+#ifdef DEBUG
+    printf("调试信息\n");
+#else
+    printf("发布版本\n");
+#endif
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>调试代码</li>
+            <li>跨平台开发</li>
+            <li>版本控制</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 条件编译是在编译时进行的<br>
+            - 可以使用<code>#ifndef</code>判断宏是否未定义
+        </div>
+
+        <h3>19. 文件包含与头文件</h3>
+
+        <h4>19.1 文件包含</h4>
+        <p>文件包含的语法为：<code>#include <头文件></code> 或 <code>#include "头文件"</code></p>
+
+        <h4>语法示例：</h4>
+        <pre><code>#include <stdio.h> // 标准库头文件
+#include "myheader.h" // 自定义头文件
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>引入标准库函数</li>
+            <li>引入自定义函数原型</li>
+            <li>模块化设计</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - <code><></code>用于标准库头文件，<code>""</code>用于自定义头文件<br>
+            - 头文件可以嵌套包含
+        </div>
+
+        <h4>19.2 头文件编写</h4>
+        <p>头文件通常包含：</p>
+        <ul>
+            <li>函数原型</li>
+            <li>宏定义</li>
+            <li>结构体、枚举定义</li>
+        </ul>
+
+        <h4>语法示例：</h4>
+        <pre><code>#ifndef MYHEADER_H
+#define MYHEADER_H
+
+#define PI 3.1415926
+
+struct Person {
+    char name[20];
+    int age;
+};
+
+int add(int a, int b);
+
+#endif // MYHEADER_H
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>接口定义</li>
+            <li>代码复用</li>
+            <li>模块化设计</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 头文件需要包含保护，避免重复包含<br>
+            - 头文件不应包含函数实现（除非是内联函数）
+        </div>
+
+        <h2>第八部分：高级主题</h2>
+
+        <h3>20. 位运算与掩码</h3>
+
+        <h4>20.1 位运算符</h4>
+        <p>C语言提供了以下位运算符：</p>
+        <ul>
+            <li><code>&</code>：按位与</li>
+            <li><code>|</code>：按位或</li>
+            <li><code>^</code>：按位异或</li>
+            <li><code>~</code>：按位取反</li>
+            <li><code><<</code>：左移</li>
+            <li><code>>></code>：右移</li>
+        </ul>
+
+        <h4>语法示例：</h4>
+        <pre><code>int a = 0b1010; // 10
+int b = 0b0110; // 6
+
+int result1 = a & b; // 0b0010（2）
+int result2 = a | b; // 0b1110（14）
+int result3 = a ^ b; // 0b1100（12）
+int result4 = ~a;    // 按位取反
+int result5 = a << 1; // 0b10100（20）
+int result6 = a >> 1; // 0b0101（5）
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>硬件控制</li>
+            <li>数据压缩</li>
+            <li>加密算法</li>
+            <li>状态标志</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 位运算操作的是二进制位<br>
+            - 左移相当于乘以2，右移相当于除以2
+        </div>
+
+        <h4>20.2 掩码</h4>
+        <p>掩码是一种位运算技术，用于提取或设置特定位。</p>
+
+        <h4>语法示例：</h4>
+        <pre><code>// 提取低8位
+int value = 0x1234;
+int low8 = value & 0xFF; // 0x34
+
+// 设置第3位
+int flag = 0;
+flag |= (1 << 2); // 设置第3位（从0开始计数）
+
+// 清除第3位
+flag &= ~(1 << 2); // 清除第3位
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>硬件寄存器操作</li>
+            <li>状态标志处理</li>
+            <li>数据打包</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 掩码需要根据具体需求设计<br>
+            - 位运算比算术运算更快
+        </div>
+
+        <h3>21. 递归与栈</h3>
+
+        <h4>21.1 递归函数</h4>
+        <p>递归函数是指调用自身的函数。</p>
+
+        <h4>语法示例：</h4>
+        <pre><code>int factorial(int n) {
+    if (n == 0) {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>阶乘计算</li>
+            <li>斐波那契数列</li>
+            <li>树遍历</li>
+            <li>分治算法</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 递归函数需要有终止条件<br>
+            - 递归深度过深会导致栈溢出
+        </div>
+
+        <h4>21.2 栈</h4>
+        <p>栈是一种后进先出（LIFO）的数据结构，C程序的栈用于存储：</p>
+        <ul>
+            <li>局部变量</li>
+            <li>函数参数</li>
+            <li>返回地址</li>
+        </ul>
+
+        <h4>语法示例：</h4>
+        <pre><code>void func(int a) {
+    int b = 10;
+    // 局部变量a和b存储在栈中
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>函数调用</li>
+            <li>表达式求值</li>
+            <li>递归实现</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 栈的大小是有限的<br>
+            - 栈溢出会导致程序崩溃
+        </div>
+
+        <h3>22. 错误处理与调试</h3>
+
+        <h4>22.1 错误处理</h4>
+        <p>C语言的错误处理主要通过返回值和全局变量<code>errno</code>实现。</p>
+
+        <h4>语法示例：</h4>
+        <pre><code>#include <errno.h>
+
+FILE *fp = fopen("data.txt", "r");
+if (fp == NULL) {
+    printf("文件打开失败：%s\n", strerror(errno));
+    return 1;
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>文件操作</li>
+            <li>内存分配</li>
+            <li>系统调用</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - <code>errno</code>在成功调用时不会被重置<br>
+            - 需要在调用前清除<code>errno</code>
+        </div>
+
+        <h4>22.2 调试</h4>
+        <p>C语言的调试方法包括：</p>
+        <ul>
+            <li>打印调试（<code>printf</code>）</li>
+            <li>调试器（如GDB、Visual Studio调试器）</li>
+            <li>断言（<code>assert</code>）</li>
+        </ul>
+
+        <h4>语法示例：</h4>
+        <pre><code>#include <assert.h>
+
+int add(int a, int b) {
+    assert(a >= 0 && b >= 0); // 断言a和b非负
+    return a + b;
+}
+</code></pre>
+
+        <h4>常见应用场景：</h4>
+        <ul>
+            <li>代码调试</li>
+            <li>错误检测</li>
+            <li>单元测试</li>
+        </ul>
+
+        <div class="note">
+            <strong>注意事项：</strong><br>
+            - 断言在发布版本中会被禁用<br>
+            - 断言用于检查程序内部错误
+        </div>
+
+        <h2>总结</h2>
+
+        <p>本手册系统涵盖了C语言的核心知识点，包括基础语法、函数与指针、数组与字符串、结构体与联合体、内存管理、文件操作、预处理指令和高级主题。通过复习这些知识点，你可以巩固C语言基础，提高编程能力。</p>
+
+        <p>建议结合实际项目练习，将理论知识应用到实践中，加深对C语言的理解和掌握。</p>
+
+        <h2>附录：常用标准库函数</h2>
+
+        <h3>输入输出函数（<code>&lt;stdio.h&gt;</code>）</h3>
+        <ul>
+            <li><code>printf</code>：格式化输出</li>
+            <li><code>scanf</code>：格式化输入</li>
+            <li><code>fopen</code>：打开文件</li>
+            <li><code>fclose</code>：关闭文件</li>
+            <li><code>fread</code>：读取文件</li>
+            <li><code>fwrite</code>：写入文件</li>
+        </ul>
+
+        <h3>字符串函数（<code>&lt;string.h&gt;</code>）</h3>
+        <ul>
+            <li><code>strlen</code>：计算字符串长度</li>
+            <li><code>strcpy</code>：复制字符串</li>
+            <li><code>strcat</code>：拼接字符串</li>
+            <li><code>strcmp</code>：比较字符串</li>
+            <li><code>strchr</code>：查找字符</li>
+            <li><code>strstr</code>：查找子串</li>
+        </ul>
+
+        <h3>内存函数（<code>&lt;stdlib.h&gt;</code>）</h3>
+        <ul>
+            <li><code>malloc</code>：动态内存分配</li>
+            <li><code>calloc</code>：动态内存分配并初始化</li>
+            <li><code>realloc</code>：重新分配内存</li>
+            <li><code>free</code>：释放内存</li>
+        </ul>
+
+        <h3>数学函数（<code>&lt;math.h&gt;</code>）</h3>
+        <ul>
+            <li><code>sqrt</code>：平方根</li>
+            <li><code>pow</code>：幂运算</li>
+            <li><code>sin</code>：正弦函数</li>
+            <li><code>cos</code>：余弦函数</li>
+            <li><code>fabs</code>：绝对值</li>
+        </ul>
+
+        <h3>时间函数（<code>&lt;time.h&gt;</code>）</h3>
+        <ul>
+            <li><code>time</code>：获取当前时间</li>
+            <li><code>localtime</code>：转换为本地时间</li>
+            <li><code>strftime</code>：格式化时间字符串</li>
+        </ul>
+
+        <h2>版权声明</h2>
+
+        <p>本手册仅供学习使用，请勿用于商业用途。如有错误或建议，请联系作者。</p>
+    </div>
+</body>
+</html>
