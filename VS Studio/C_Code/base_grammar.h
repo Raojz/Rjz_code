@@ -201,4 +201,6 @@ void base_code10();//文件简单操作
 void S_list_code1();//单向链表操作
 
 void base_code11();//函数指针简单应用
+
+void D_list_code1();//双向链表简单操作
 #endif

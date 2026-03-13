@@ -1,0 +1,11 @@
+# 对所有文件生效
+[*]
+charset = utf-8
+
+# 对C#文件，强制使用带BOM的UTF-8（与.NET工具链兼容）
+[*.cs]
+charset = utf-8-bom
+
+# 对前端文件，强制使用无BOM的UTF-8（避免构建工具报错）
+[*.{js,ts,vue,css,json,html}]
+charset = utf-8

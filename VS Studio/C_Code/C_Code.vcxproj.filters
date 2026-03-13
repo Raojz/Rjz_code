@@ -21,5 +21,11 @@
     <ClCompile Include="1base_grammar.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="3list.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="2array.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
