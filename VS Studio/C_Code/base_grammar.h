@@ -1,6 +1,7 @@
-﻿#ifndef __BASE_GRAMMAR_H_
+#ifndef __BASE_GRAMMAR_H_
 #define __BASE_GRAMMAR_H_
 
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -203,4 +204,8 @@ void S_list_code1();//单向链表操作
 void base_code11();//函数指针简单应用
 
 void D_list_code1();//双向链表简单操作
+
+
+void base_test();//基本语法测试：基本算法和常见位操作
+void array_test();//指针和字符串处理
 #endif

@@ -122,6 +122,169 @@ void array_code04()
 	//printf("姓名：%s,年龄：%d,成绩：%.1f", array.name, array.age, array.grade);
 }
 
+
+void test_pointer_array() {
+    printf("=== 指针与数组 ===\n");
+
+    int arr[] = { 10, 20, 30, 40, 50 };
+    int* ptr = arr;
+
+    printf("数组地址: %p, 指针值: %p\n", (void*)arr, (void*)ptr);
+    printf("arr[0] = %d, *ptr = %d\n", arr[0], *ptr);
+
+    printf("\n使用指针遍历数组:\n");
+    for (int i = 0; i < 5; i++) {
+        printf("*(ptr + %d) = %d\n", i, *(ptr + i));
+    }
+
+    printf("\n使用指针算术运算:\n");
+    ptr = arr;
+    printf("ptr = %p, *ptr = %d\n", (void*)ptr, *ptr);
+    ptr++;
+    printf("ptr++ 后: ptr = %p, *ptr = %d\n", (void*)ptr, *ptr);
+    ptr += 2;
+    printf("ptr += 2 后: ptr = %p, *ptr = %d\n", (void*)ptr, *ptr);
+}
+
+void test_pointer_pointer() {
+    printf("\n=== 多级指针 ===\n");
+
+    int value = 100;
+    int* ptr = &value;
+    int** ptr_ptr = &ptr;
+    int*** ptr_ptr_ptr = &ptr_ptr;
+
+    printf("value = %d\n", value);
+    printf("*ptr = %d\n", *ptr);
+    printf("**ptr_ptr = %d\n", **ptr_ptr);
+    printf("***ptr_ptr_ptr = %d\n", ***ptr_ptr_ptr);
+
+    printf("\n地址关系:\n");
+    printf("&value = %p\n", (void*)&value);
+    printf("ptr = %p\n", (void*)ptr);
+    printf("&ptr = %p\n", (void*)&ptr);
+    printf("ptr_ptr = %p\n", (void*)ptr_ptr);
+}
+
+typedef int (*operation_func)(int, int);
+
+int add(int a, int b) {
+    return a + b;
+}
+
+int subtract(int a, int b) {
+    return a - b;
+}
+
+int multiply(int a, int b) {
+    return a * b;
+}
+
+int divide(int a, int b) {
+    if (b != 0) {
+        return a / b;
+    }
+    return 0;
+}
+
+void test_function_pointer() {
+    printf("\n=== 函数指针 ===\n");
+
+    operation_func ops[] = { add, subtract, multiply, divide };
+    const char* op_names[] = { "加", "减", "乘", "除" };
+
+    int a = 20, b = 5;
+
+    for (int i = 0; i < 4; i++) {
+        printf("%d %s %d = %d\n", a, op_names[i], b, ops[i](a, b));
+    }
+
+    printf("\n使用函数指针数组实现计算器:\n");
+    int choice;
+    printf("选择操作 (0:加 1:减 2:乘 3:除): ");
+    scanf("%d", &choice);
+
+    if (choice >= 0 && choice < 4) {
+        printf("结果: %d\n", ops[choice](a, b));
+    }
+}
+
+char* my_strcpy(char* dest, const char* src) {
+    char* original_dest = dest;
+    while ((*dest++ = *src++) != '\0');
+    return original_dest;
+}
+
+int my_strcmp(const char* s1, const char* s2) {
+    while (*s1 && (*s1 == *s2)) {
+        s1++;
+        s2++;
+    }
+    return *(const unsigned char*)s1 - *(const unsigned char*)s2;
+}
+
+char* my_strstr(const char* haystack, const char* needle) {
+    if (*needle == '\0') {
+        return (char*)haystack;
+    }
+
+    for (; *haystack != '\0'; haystack++) {
+        const char* h = haystack;
+        const char* n = needle;
+
+        while (*h && *n && (*h == *n)) {
+            h++;
+            n++;
+        }
+
+        if (*n == '\0') {
+            return (char*)haystack;
+        }
+    }
+
+    return NULL;
+}
+
+void test_string_functions() {
+    printf("\n=== 字符串处理函数 ===\n");
+
+    char dest[50];
+    const char* src = "Hello, World!";
+
+    printf("测试 strcpy:\n");
+    my_strcpy(dest, src);
+    printf("复制结果: %s\n", dest);
+
+    printf("\n测试 strcmp:\n");
+    const char* str1 = "apple";
+    const char* str2 = "banana";
+    const char* str3 = "apple";
+
+    printf("strcmp(\"%s\", \"%s\") = %d\n", str1, str2, my_strcmp(str1, str2));
+    printf("strcmp(\"%s\", \"%s\") = %d\n", str1, str3, my_strcmp(str1, str3));
+
+    printf("\n测试 strstr:\n");
+    const char* text = "This is a test string for testing";
+    const char* pattern = "test";
+
+    char* result = my_strstr(text, pattern);
+    if (result) {
+        printf("在 \"%s\" 中找到 \"%s\"，位置: %ld\n", text, pattern, result - text);
+    }
+    else {
+        printf("未找到\n");
+    }
+}
+
+void array_test() 
+{
+    printf("=== C语言 Day 2 练习: 指针和字符串处理 ===\n\n");
+    test_pointer_array();
+    test_pointer_pointer();
+    test_function_pointer();
+    test_string_functions();
+}
+
 //typedef struct student_data
 //{
 //	int id;

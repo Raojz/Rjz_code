@@ -1,4 +1,4 @@
-﻿#include "base_grammar.h"
+#include "base_grammar.h"
 
 
 /*题目1：计算圆的面积和周长
@@ -536,3 +536,147 @@ void base_code11()
         printf("%d  ", data[i]);
     }
 }
+
+
+void bubble_sort(int arr[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+}
+
+int partition(int arr[], int low, int high) {
+    int pivot = arr[high];
+    int i = low - 1;
+
+    for (int j = low; j < high; j++) {
+        if (arr[j] < pivot) {
+            i++;
+            int temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+    }
+
+    int temp = arr[i + 1];
+    arr[i + 1] = arr[high];
+    arr[high] = temp;
+
+    return i + 1;
+}
+
+void quick_sort(int arr[], int low, int high) {
+    if (low < high) {
+        int pi = partition(arr, low, high);
+        quick_sort(arr, low, pi - 1);
+        quick_sort(arr, pi + 1, high);
+    }
+}
+
+void print_array(int arr[], int n) {
+    for (int i = 0; i < n; i++) {
+        printf("%d ", arr[i]);
+    }
+    printf("\n");
+}
+
+void test_sorting() {
+    printf("=== C语言 Day 1 练习: 排序算法和位操作 ===\n\n");
+
+    int arr1[] = { 64, 34, 25, 12, 22, 11, 90 };
+    int arr2[] = { 64, 34, 25, 12, 22, 11, 90 };
+    int n = sizeof(arr1) / sizeof(arr1[0]);
+
+    printf("原始数组: ");
+    print_array(arr1, n);
+
+    printf("\n冒泡排序结果: ");
+    bubble_sort(arr1, n);
+    print_array(arr1, n);
+
+    printf("\n快速排序结果: ");
+    quick_sort(arr2, 0, n - 1);
+    print_array(arr2, n);
+}
+
+typedef struct {
+    uint8_t bit0 : 1;
+    uint8_t bit1 : 1;
+    uint8_t bit2 : 1;
+    uint8_t bit3 : 1;
+    uint8_t bit4 : 1;
+    uint8_t bit5 : 1;
+    uint8_t bit6 : 1;
+    uint8_t bit7 : 1;
+} bit_field_t;
+
+typedef union {
+    uint8_t byte;
+    bit_field_t bits;
+} register_t;
+
+void set_bit(uint8_t* reg, uint8_t bit_pos) //置1
+{
+    *reg |= (1 << bit_pos);
+}
+
+void clear_bit(uint8_t* reg, uint8_t bit_pos)//清零
+{
+    *reg &= ~(1 << bit_pos);
+}
+
+void toggle_bit(uint8_t* reg, uint8_t bit_pos)//反转
+{
+    *reg ^= (1 << bit_pos);
+}
+
+uint8_t read_bit(uint8_t reg, uint8_t bit_pos)//查值
+{
+    return (reg >> bit_pos) & 0x01;
+}
+
+void test_bit_operations() {
+    printf("\n=== 位操作测试 ===\n");
+
+    uint8_t reg = 0x00;
+    printf("初始值: 0x%02X\n", reg);
+
+    set_bit(&reg, 2);
+    printf("设置bit2后: 0x%02X\n", reg);
+
+    set_bit(&reg, 5);
+    printf("设置bit5后: 0x%02X\n", reg);
+
+    clear_bit(&reg, 2);
+    printf("清除bit2后: 0x%02X\n", reg);
+
+    toggle_bit(&reg, 7);
+    printf("翻转bit7后: 0x%02X\n", reg);
+
+    printf("\n读取各个bit的值:\n");
+    for (int i = 0; i < 8; i++) {
+        printf("bit%d = %d\n", i, read_bit(reg, i));
+    }
+
+    register_t gpio_reg;
+    gpio_reg.byte = 0x55;
+
+    printf("\n使用位域访问:\n");
+    printf("byte = 0x%02X\n", gpio_reg.byte);
+    printf("bit0 = %d, bit1 = %d, bit2 = %d, bit3 = %d\n",
+        gpio_reg.bits.bit0, gpio_reg.bits.bit1,
+        gpio_reg.bits.bit2, gpio_reg.bits.bit3);
+}
+
+
+void base_test()
+{
+    test_sorting();
+    test_bit_operations();
+}
+
